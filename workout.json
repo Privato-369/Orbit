@@ -1,0 +1,361 @@
+{
+  "workouts": [
+    {
+      "id": "00001",
+      "name": "Bent Over Row (Band)",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00002",
+      "name": "Bent Over Row (Barbell)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts", "Lower Back"]
+    },
+    {
+      "id": "00003",
+      "name": "Bent Over Row (Dumbbell)",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00004",
+      "name": "Bent Over Row (Smith Machine)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00005",
+      "name": "Chest Supported Incline Row (Dumbbell)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00006",
+      "name": "Chest Supported T-Bar Row",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts", "Traps"]
+    },
+    {
+      "id": "00007",
+      "name": "Dead Hang",
+      "category": "Upper Back",
+      "primaryMuscle": "Forearms",
+      "secondaryMuscles": ["Lats", "Shoulders"]
+    },
+    {
+      "id": "00008",
+      "name": "Gorilla Row (Kettlebell)",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Rear Delts", "Core"]
+    },
+    {
+      "id": "00009",
+      "name": "Inverted Row",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts", "Core"]
+    },
+    {
+      "id": "00010",
+      "name": "Iso-Lateral Low Row",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00011",
+      "name": "Iso-Lateral Row (Machine)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00012",
+      "name": "Landmine Row",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts", "Lower Back", "Core"]
+    },
+    {
+      "id": "00013",
+      "name": "Low Row (Suspension)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts", "Core"]
+    },
+    {
+      "id": "00014",
+      "name": "Pendlay Row (Barbell)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts", "Lower Back"]
+    },
+    {
+      "id": "00015",
+      "name": "Rack Pull",
+      "category": "Upper Back",
+      "primaryMuscle": "Traps",
+      "secondaryMuscles": ["Lower Back", "Glutes", "Hamstrings", "Forearms"]
+    },
+    {
+      "id": "00016",
+      "name": "Renegade Row (Dumbbell)",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Core", "Shoulders"]
+    },
+    {
+      "id": "00017",
+      "name": "Scapular Pull Ups",
+      "category": "Upper Back",
+      "primaryMuscle": "Traps",
+      "secondaryMuscles": ["Lats", "Shoulders", "Forearms"]
+    },
+    {
+      "id": "00018",
+      "name": "Seal Row (Barbell)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00019",
+      "name": "Seal Row (Dumbbell)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00020",
+      "name": "Seated Cable Row - Bar Grip",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00021",
+      "name": "Seated Cable Row - Bar Wide Grip",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Rear Delts", "Lats", "Biceps", "Traps"]
+    },
+    {
+      "id": "00022",
+      "name": "Seated Cable Row - V Grip (Cable)",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00023",
+      "name": "Seated Row (Machine)",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00024",
+      "name": "Single Arm Cable Row",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Rear Delts", "Core"]
+    },
+    {
+      "id": "00025",
+      "name": "T Bar Row",
+      "category": "Upper Back",
+      "primaryMuscle": "Upper Back",
+      "secondaryMuscles": ["Lats", "Biceps", "Rear Delts", "Lower Back"]
+    },
+    {
+      "id": "00026",
+      "name": "Chin Ups",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00027",
+      "name": "Chin Ups (Assisted)",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00028",
+      "name": "Chin Ups (Weighted)",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00029",
+      "name": "Dumbbell Row",
+      "category": "Upper Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00030",
+      "name": "Iso-Lateral High Row (Machine)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Upper Back", "Biceps", "Rear Delts"]
+    },
+    {
+      "id": "00031",
+      "name": "Kipping Pull Ups",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Shoulders", "Core"]
+    },
+    {
+      "id": "00032",
+      "name": "Kneeling Pulldown (Band)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00033",
+      "name": "Lat Pulldown - Close Grip (Cable)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00034",
+      "name": "Lat Pulldown (Band)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00035",
+      "name": "Lat Pulldown (Cable)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00036",
+      "name": "Lat Pulldown (Machine)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00037",
+      "name": "Negative Pull Ups",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00038",
+      "name": "Pull Ups",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00039",
+      "name": "Pull Ups (Assisted)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00040",
+      "name": "Pull Ups (Band)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00041",
+      "name": "Pull Ups (Weighted)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00042",
+      "name": "Pullover (Dumbbell)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Chest", "Triceps"]
+    },
+    {
+      "id": "00043",
+      "name": "Pullover (Machine)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Chest", "Triceps"]
+    },
+    {
+      "id": "00044",
+      "name": "Reverse Grip Lat Pulldown (Cable)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00045",
+      "name": "Ring Pull Ups",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back", "Core"]
+    },
+    {
+      "id": "00046",
+      "name": "Rope Straight Arm Pulldown",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Triceps", "Core"]
+    },
+    {
+      "id": "00047",
+      "name": "Single Arm Lat Pulldown",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00048",
+      "name": "Sternum Pull Ups (Gironda)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back", "Traps"]
+    },
+    {
+      "id": "00049",
+      "name": "Straight Arm Lat Pulldown (Cable)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Triceps", "Core"]
+    },
+    {
+      "id": "00050",
+      "name": "Vertical Traction (Machine)",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back"]
+    },
+    {
+      "id": "00051",
+      "name": "Wide Pull Ups",
+      "category": "Lats",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": ["Biceps", "Forearms", "Upper Back", "Traps"]
+    }
+  ]
+}

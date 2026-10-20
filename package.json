@@ -1,0 +1,17 @@
+{
+  "name": "orbit-workout-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run css && node scripts/server.js",
+    "build": "npm run css && node scripts/build.js",
+    "css": "tailwindcss -i ./src.css -o ./app.css --minify",
+    "css:watch": "tailwindcss -i ./src.css -o ./app.css --watch=always",
+    "preview": "node scripts/server.js dist"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.0",
+    "tailwindcss": "4.3.0"
+  }
+}
