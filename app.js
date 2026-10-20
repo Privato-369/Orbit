@@ -31,8 +31,9 @@ let editor = null;
 let modal = null;
 let toastTimer = null;
 let selectedExercise = null;
-let selectedPeriod = "90 Days";
+let selectedPeriod = "Past 7 Days";
 let selectedMetric = "e1rm";
+let exercisePickerOpen = false;
 let pendingImport = null;
 
 function loadData() {
@@ -218,17 +219,31 @@ function exerciseLabel(id) {
     historyFor(id).at(-1)?.exerciseName || "Exercise";
 }
 
+function renderExerciseIdentity(id, name, size = "small") {
+  const exerciseId = typeof id === "string" ? id : "";
+  const imageUrl = exerciseId
+    ? new URL(`workout-images/${encodeURIComponent(exerciseId)}.jpg`, document.baseURI).href
+    : "";
+  const label = name || exerciseLabel(exerciseId);
+  return `<span class="exercise-identity"><span class="exercise-thumb exercise-thumb-${size}" aria-hidden="true">
+    ${imageUrl ? `<img src="${esc(imageUrl)}" alt="" loading="lazy" decoding="async" data-exercise-image="${esc(exerciseId)}" />` : ""}
+    <span class="exercise-thumb-fallback" ${imageUrl ? "hidden" : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3"/><path d="M5 20c.6-4 3-6 7-6s6.4 2 7 6"/></svg></span>
+  </span><span class="exercise-identity-name">${esc(label)}</span></span>`;
+}
+
 function renderDashboard() {
   const stats = getStats();
   const trackedIds = Object.keys(data.histories).filter(id => data.histories[id]?.length);
   if (!selectedExercise || !trackedIds.includes(selectedExercise)) selectedExercise = trackedIds[0] || "";
-  const exerciseOptions = trackedIds.map(id => `<option value="${esc(id)}" ${id === selectedExercise ? "selected" : ""}>${esc(exerciseLabel(id))}</option>`).join("");
   const records = selectedExercise ? historyFor(selectedExercise) : [];
   const cutoff = new Date();
-  if (selectedPeriod === "30 Days") cutoff.setDate(cutoff.getDate() - 30);
-  if (selectedPeriod === "90 Days") cutoff.setDate(cutoff.getDate() - 90);
-  const visible = selectedPeriod === "All Time" ? records : records.filter(r => new Date(r.timestamp) >= cutoff);
-  const metricKey = selectedMetric === "weight" ? "weightKg" : selectedMetric === "reps" ? "reps" : "e1rmKg";
+  const periodEnd = new Date(cutoff);
+  if (selectedPeriod === "Past 7 Days") cutoff.setDate(cutoff.getDate() - 7);
+  if (selectedPeriod === "Past 15 Days") cutoff.setDate(cutoff.getDate() - 15);
+  const visible = selectedPeriod === "All Time" ? records : records.filter(r => {
+    const timestamp = new Date(r.timestamp);
+    return timestamp >= cutoff && timestamp <= periodEnd;
+  });
   const points = visible.map(r => ({ ...r, value: selectedMetric === "reps" ? r.reps : selectedMetric === "weight" ? fromDisplay(r.weightKg) : fromDisplay(r.e1rmKg) }));
   const svg = renderChart(points);
   const pct = points.length > 1 && points[0].value > 0 ? ((points.at(-1).value - points[0].value) / points[0].value) * 100 : null;
@@ -250,8 +265,11 @@ function renderDashboard() {
       <article class="card card-pad chart-card">
         <div class="section-title"><div><h2>Exercise progress</h2><div class="row-secondary">Estimated strength is an e1RM estimate, not a direct measurement.</div></div></div>
         ${trackedIds.length ? `<div class="chart-top">
-          <label class="sr-only" for="chart-exercise">Exercise</label><select id="chart-exercise" class="select compact">${exerciseOptions}</select>
-          <label class="sr-only" for="chart-period">Time period</label><select id="chart-period" class="select compact">${["30 Days", "90 Days", "All Time"].map(p => `<option ${p === selectedPeriod ? "selected" : ""}>${p}</option>`).join("")}</select>
+          <div class="exercise-picker">
+            <button class="exercise-picker-trigger" type="button" data-action="toggle-exercise-picker" aria-haspopup="listbox" aria-expanded="${exercisePickerOpen}">${renderExerciseIdentity(selectedExercise, exerciseLabel(selectedExercise), "small")}<span class="picker-chevron" aria-hidden="true">⌄</span></button>
+            ${exercisePickerOpen ? `<div class="exercise-picker-options" role="listbox" aria-label="Choose exercise">${trackedIds.map(id => `<button type="button" class="exercise-picker-option ${id === selectedExercise ? "selected" : ""}" role="option" aria-selected="${id === selectedExercise}" data-action="select-chart-exercise" data-id="${esc(id)}">${renderExerciseIdentity(id, exerciseLabel(id), "small")}</button>`).join("")}</div>` : ""}
+          </div>
+          <label class="sr-only" for="chart-period">Time period</label><select id="chart-period" class="select compact">${["Past 7 Days", "Past 15 Days", "All Time"].map(p => `<option ${p === selectedPeriod ? "selected" : ""}>${p}</option>`).join("")}</select>
           <label class="sr-only" for="chart-metric">Chart metric</label><select id="chart-metric" class="select compact"><option value="e1rm" ${selectedMetric === "e1rm" ? "selected" : ""}>Estimated strength</option><option value="weight" ${selectedMetric === "weight" ? "selected" : ""}>Weight</option><option value="reps" ${selectedMetric === "reps" ? "selected" : ""}>Repetitions</option></select>
         </div>
         <div class="chart-wrap">${svg}</div>
@@ -261,13 +279,13 @@ function renderDashboard() {
       </article>
       <div class="stack">
         <article class="card card-pad"><div class="section-title"><h2>Recent personal records</h2><span class="badge">Retained history</span></div>
-          ${recentPrs.length ? `<div class="list">${recentPrs.map(pr => `<div class="list-row"><div><button class="inline-link row-primary" data-action="open-history" data-id="${esc(pr.exerciseId)}">${esc(pr.exerciseName || exerciseLabel(pr.exerciseId))}</button><div class="row-secondary">${esc(pr.label)} · ${fmtDate(pr.achievedAt)}</div></div><div class="row-value">${pr.weightKg != null ? `${toDisplay(pr.weightKg)} ${unit()}${pr.reps ? ` × ${pr.reps}` : ""}` : `${Number(pr.value).toFixed(1)} e1RM`}</div></div>`).join("")}</div>` : `<div class="empty"><strong>No personal records yet</strong>Records are detected when you save a workout.</div>`}
+          ${recentPrs.length ? `<div class="list">${recentPrs.map(pr => `<div class="list-row"><div><button class="inline-link row-primary exercise-link" data-action="open-history" data-id="${esc(pr.exerciseId)}">${renderExerciseIdentity(pr.exerciseId, pr.exerciseName || exerciseLabel(pr.exerciseId), "tiny")}</button><div class="row-secondary">${esc(pr.label)} · ${fmtDate(pr.achievedAt)}</div></div><div class="row-value">${pr.weightKg != null ? `${toDisplay(pr.weightKg)} ${unit()}${pr.reps ? ` × ${pr.reps}` : ""}` : `${Number(pr.value).toFixed(1)} e1RM`}</div></div>`).join("")}</div>` : `<div class="empty"><strong>No personal records yet</strong>Records are detected when you save a workout.</div>`}
         </article>
         <article class="card card-pad"><div class="section-title"><h2>Recent exercise history</h2><span class="badge">${trackedIds.length} exercises</span></div>
-          ${latestByExercise.length ? `<div class="list">${latestByExercise.map(({ id, record, count }) => `<div class="list-row"><div><button class="inline-link row-primary" data-action="open-history" data-id="${esc(id)}">${esc(exerciseLabel(id))}</button><div class="row-secondary">${fmtDate(record.timestamp)} · ${count} retained ${count === 1 ? "session" : "sessions"}</div></div><div class="row-value">${toDisplay(record.weightKg)} ${unit()} × ${record.reps}</div></div>`).join("")}</div>` : `<div class="empty"><strong>No recent activity</strong>Your exercise history will show up after your first saved workout.</div>`}
+          ${latestByExercise.length ? `<div class="list">${latestByExercise.map(({ id, record, count }) => `<div class="list-row"><div><button class="inline-link row-primary exercise-link" data-action="open-history" data-id="${esc(id)}">${renderExerciseIdentity(id, exerciseLabel(id), "tiny")}</button><div class="row-secondary">${fmtDate(record.timestamp)} · ${count} retained ${count === 1 ? "session" : "sessions"}</div></div><div class="row-value">${toDisplay(record.weightKg)} ${unit()} × ${record.reps}</div></div>`).join("")}</div>` : `<div class="empty"><strong>No recent activity</strong>Your exercise history will show up after your first saved workout.</div>`}
         </article>
         <article class="card card-pad"><div class="section-title"><h2>Performance status</h2><span class="badge">Retained history</span></div>
-          ${statusRows.length ? `<div class="list">${statusRows.map(({ id, status }) => `<div class="list-row"><button class="inline-link row-primary" data-action="open-history" data-id="${esc(id)}">${esc(exerciseLabel(id))}</button><span class="badge ${status === "Improving" ? "good" : ""}">${status}</span></div>`).join("")}</div>` : `<div class="empty"><strong>Not enough training data yet</strong>Status appears after several sessions for an exercise.</div>`}
+          ${statusRows.length ? `<div class="list">${statusRows.map(({ id, status }) => `<div class="list-row"><button class="inline-link row-primary exercise-link" data-action="open-history" data-id="${esc(id)}">${renderExerciseIdentity(id, exerciseLabel(id), "tiny")}</button><span class="badge ${status === "Improving" ? "good" : ""}">${status}</span></div>`).join("")}</div>` : `<div class="empty"><strong>Not enough training data yet</strong>Status appears after several sessions for an exercise.</div>`}
         </article>
       </div>
     </section>`;
@@ -305,7 +323,7 @@ function renderWorkouts() {
     ${sorted.length ? `<section class="workout-grid">${sorted.map((workout, index) => {
       const totalSets = workout.exercises.reduce((sum, x) => sum + x.sets, 0);
       return `<article class="card workout-card"><div class="workout-card-top"><div><div class="workout-title">${esc(workout.name)}</div><div class="workout-meta">${workout.exercises.length} ${workout.exercises.length === 1 ? "exercise" : "exercises"} · ${totalSets} sets</div></div><span class="badge">Routine ${index + 1}</span></div>
-        <div class="exercise-pills">${workout.exercises.slice(0, 4).map(item => `<span class="pill">${esc(catalogue.find(e => e.id === item.exerciseId)?.name || item.name || "Exercise")}</span>`).join("")}${workout.exercises.length > 4 ? `<span class="pill">+${workout.exercises.length - 4} more</span>` : ""}</div>
+        <div class="exercise-pills">${workout.exercises.slice(0, 4).map(item => `<span class="exercise-chip">${renderExerciseIdentity(item.exerciseId, catalogue.find(e => e.id === item.exerciseId)?.name || item.name || "Exercise", "tiny")}</span>`).join("")}${workout.exercises.length > 4 ? `<span class="pill">+${workout.exercises.length - 4} more</span>` : ""}</div>
         <div class="workout-actions"><button class="button primary small" data-action="start-workout" data-id="${esc(workout.id)}">Start workout</button><div class="actions-right">
           <button class="icon-button" aria-label="Move ${esc(workout.name)} up" title="Move up" data-action="move-workout" data-id="${esc(workout.id)}" data-direction="-1" ${index === 0 ? "disabled" : ""}>↑</button>
           <button class="icon-button" aria-label="Move ${esc(workout.name)} down" title="Move down" data-action="move-workout" data-id="${esc(workout.id)}" data-direction="1" ${index === sorted.length - 1 ? "disabled" : ""}>↓</button>
@@ -334,12 +352,12 @@ function renderEditor() {
             <label class="sr-only" for="exercise-search">Search exercises</label><input id="exercise-search" class="text-input" value="${esc(query)}" placeholder="Search exercises or muscles…" />
             <label class="sr-only" for="category-filter">Filter by category</label><select id="category-filter" class="select"><option value="">All categories</option>${categories.map(c => `<option value="${esc(c)}" ${category === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>
           </div>
-          <div class="exercise-results">${matches.length ? matches.map(ex => `<div class="exercise-result"><div><div class="exercise-name">${esc(ex.name)}</div><div class="exercise-meta">${esc(ex.category)} · ${esc(ex.primaryMuscle)}${ex.secondaryMuscles.length ? ` · ${esc(ex.secondaryMuscles.join(", "))}` : ""}</div></div><button type="button" class="button small ${selected.has(ex.id) ? "" : "primary"}" data-action="${selected.has(ex.id) ? "remove-exercise" : "add-exercise"}" data-id="${esc(ex.id)}">${selected.has(ex.id) ? "Added ✓" : "Add"}</button></div>`).join("") : `<div class="empty"><strong>No matching exercises</strong>Try another search or clear the category filter.<br/><button class="button small" type="button" data-action="clear-exercise-filters">Clear filters</button></div>`}</div>
+          <div class="exercise-results">${matches.length ? matches.map(ex => `<div class="exercise-result"><div class="exercise-result-info">${renderExerciseIdentity(ex.id, ex.name, "medium")}<div class="exercise-meta">${esc(ex.category)} · ${esc(ex.primaryMuscle)}${ex.secondaryMuscles.length ? ` · ${esc(ex.secondaryMuscles.join(", "))}` : ""}</div></div><button type="button" class="button small ${selected.has(ex.id) ? "" : "primary"}" data-action="${selected.has(ex.id) ? "remove-exercise" : "add-exercise"}" data-id="${esc(ex.id)}">${selected.has(ex.id) ? "Added ✓" : "Add"}</button></div>`).join("") : `<div class="empty"><strong>No matching exercises</strong>Try another search or clear the category filter.<br/><button class="button small" type="button" data-action="clear-exercise-filters">Clear filters</button></div>`}</div>
         </section>
         <section class="card editor-card selected-panel"><div class="section-title"><div><h2>Your exercises</h2><div class="row-secondary">${editor.exercises.length} selected · set targets are adjustable</div></div></div>
           ${editor.exercises.length ? editor.exercises.map((item, index) => {
             const ex = catalogue.find(e => e.id === item.exerciseId);
-            return `<div class="selected-item"><div><div class="exercise-name">${esc(ex?.name || item.name || "Exercise")}</div><div class="tiny-label">${esc(ex?.category || item.category || "")}</div></div><label><span class="tiny-label">Sets</span><input class="number-input set-count" aria-label="Sets for ${esc(ex?.name || "exercise")}" type="number" min="1" max="30" step="1" value="${item.sets}" data-action="set-count" data-index="${index}" /></label><div style="display:flex;gap:4px"><button type="button" class="icon-button" aria-label="Move up" data-action="move-exercise" data-index="${index}" data-direction="-1" ${index === 0 ? "disabled" : ""}>↑</button><button type="button" class="icon-button" aria-label="Move down" data-action="move-exercise" data-index="${index}" data-direction="1" ${index === editor.exercises.length - 1 ? "disabled" : ""}>↓</button><button type="button" class="icon-button" aria-label="Remove exercise" data-action="remove-exercise" data-id="${esc(item.exerciseId)}">×</button></div></div>`;
+            return `<div class="selected-item"><div class="selected-exercise-info">${renderExerciseIdentity(item.exerciseId, ex?.name || item.name || "Exercise", "small")}<div class="tiny-label">${esc(ex?.category || item.category || "")}</div></div><label><span class="tiny-label">Sets</span><input class="number-input set-count" aria-label="Sets for ${esc(ex?.name || "exercise")}" type="number" min="1" max="30" step="1" value="${item.sets}" data-action="set-count" data-index="${index}" /></label><div style="display:flex;gap:4px"><button type="button" class="icon-button" aria-label="Move up" data-action="move-exercise" data-index="${index}" data-direction="-1" ${index === 0 ? "disabled" : ""}>↑</button><button type="button" class="icon-button" aria-label="Move down" data-action="move-exercise" data-index="${index}" data-direction="1" ${index === editor.exercises.length - 1 ? "disabled" : ""}>↓</button><button type="button" class="icon-button" aria-label="Remove exercise" data-action="remove-exercise" data-id="${esc(item.exerciseId)}">×</button></div></div>`;
           }).join("") : `<div class="empty"><strong>No exercises selected</strong>Search the library and add the exercises for this routine.</div>`}
         </section>
       </div>
@@ -353,7 +371,7 @@ function renderActiveSession() {
   const elapsed = `${Math.floor(seconds / 60)} min`;
   return `<header class="page-header"><div><div class="eyebrow">Workout in progress · started ${fmtDate(active.startedAt, { hour: "numeric", minute: "2-digit" })}</div><h1>${esc(active.workoutName)}</h1><p class="session-timer">Elapsed ${elapsed} · session autosaves in this browser</p></div><button class="button danger" data-action="cancel-session">Cancel workout</button></header>
     ${active.exercises.map((exercise, ei) => `<section class="card session-exercise">
-      <div class="session-heading"><div><h2>${esc(exercise.name)}</h2><div class="row-secondary">${esc(exercise.category || "")} · Previous performance from latest completed session</div></div><button class="inline-link" data-action="open-history" data-id="${esc(exercise.exerciseId)}">History</button></div>
+      <div class="session-heading"><div><h2 class="session-exercise-title">${renderExerciseIdentity(exercise.exerciseId, exercise.name, "large")}</h2><div class="row-secondary">${esc(exercise.category || "")} · Previous performance from latest completed session</div></div><button class="inline-link" data-action="open-history" data-id="${esc(exercise.exerciseId)}">History</button></div>
       <div style="overflow-x:auto"><table class="set-table"><thead><tr><th>Set</th><th>Previous</th><th>Weight (${unit()})</th><th>Reps</th><th>Done</th></tr></thead><tbody>
         ${exercise.sets.map((set, si) => {
           const hasPreviousPositions = exercise.previous?.some(item => Number.isInteger(item.setNumber));
@@ -392,7 +410,7 @@ function renderHistoryPage() {
   const bestWeight = records.length ? Math.max(...records.map(x => x.weightKg)) : null;
   const mostReps = records.length ? records.reduce((best, record) => record.reps > best.reps ? record : best) : null;
   const bestE1rm = records.length ? Math.max(...records.map(x => x.e1rmKg)) : null;
-  return `<header class="page-header"><div><div class="eyebrow">Retained exercise history</div><h1>${esc(exerciseLabel(id))}</h1><p class="subheading">${esc(ex?.category || first?.category || "Exercise")} · ${esc(ex?.primaryMuscle || first?.primaryMuscle || "")}${ex?.secondaryMuscles?.length ? ` · ${esc(ex.secondaryMuscles.join(", "))}` : ""}</p></div><button class="button" data-action="back-dashboard">← Dashboard</button></header>
+  return `<header class="page-header"><div><div class="eyebrow">Retained exercise history</div><h1 class="history-exercise-title">${renderExerciseIdentity(id, exerciseLabel(id), "large")}</h1><p class="subheading">${esc(ex?.category || first?.category || "Exercise")} · ${esc(ex?.primaryMuscle || first?.primaryMuscle || "")}${ex?.secondaryMuscles?.length ? ` · ${esc(ex.secondaryMuscles.join(", "))}` : ""}</p></div><button class="button" data-action="back-dashboard">← Dashboard</button></header>
     ${records.length ? `<section class="stats-grid">${statCard("Latest", `${toDisplay(first.weightKg)} ${unit()} × ${first.reps}`, fmtDate(first.timestamp))}${statCard("Highest retained weight", `${toDisplay(bestWeight)} ${unit()}`, "Across retained best sets")}${statCard("Most reps at a weight", `${mostReps.reps} reps`, `At ${toDisplay(mostReps.weightKg)} ${unit()}`)}${statCard("Highest estimated e1RM", `${toDisplay(bestE1rm)} ${unit()}`, "Estimate, not a direct measurement")}</section>
       <section class="card card-pad" style="margin-bottom:15px"><div class="section-title"><div><h2>Estimated strength over time</h2><div class="row-secondary">Each point is a session best-set e1RM estimate.</div></div></div><div class="chart-wrap">${renderChart(chronological.map(record => ({ ...record, value: fromDisplay(record.e1rmKg) })), "e1rm")}</div></section>
       <section class="card card-pad"><div class="section-title"><div><h2>Performance history</h2><div class="row-secondary">Up to ${MAX_HISTORY} most recent recorded sessions are retained per exercise.</div></div><span class="badge">${records.length} records</span></div><div class="history-list list">${records.map(r => `<div class="list-row"><div><div class="row-primary">${fmtDate(r.timestamp)}</div><div class="row-secondary">${esc(r.workoutName)}</div></div><div class="row-value">${toDisplay(r.weightKg)} ${unit()} × ${r.reps}<div class="row-secondary">e1RM ${toDisplay(r.e1rmKg)} ${unit()}</div></div></div>`).join("")}</div></section>`
@@ -670,9 +688,9 @@ function validateBackup(backup) {
     !Array.isArray(d.active.exercises) || !Number.isFinite(new Date(d.active.startedAt).getTime()) ||
     d.active.exercises.some(exercise => !exercise || typeof exercise.exerciseId !== "string" ||
       !Array.isArray(exercise.sets) || exercise.sets.some(set => !set || typeof set.weight !== "string" ||
-        typeof set.reps !== "string" || typeof set.done !== "boolean")) ||
-      (exercise.previous && (!Array.isArray(exercise.previous) || exercise.previous.some(set =>
-        !Number.isFinite(set.weightKg) || set.weightKg < 0 || !Number.isInteger(set.reps) || set.reps < 1))))) {
+        typeof set.reps !== "string" || typeof set.done !== "boolean") ||
+      (exercise.previous !== undefined && (!Array.isArray(exercise.previous) || exercise.previous.some(set =>
+        !Number.isFinite(set.weightKg) || set.weightKg < 0 || !Number.isInteger(set.reps) || set.reps < 1)))))) {
     throw new Error("The backup contains an invalid active workout.");
   }
   return d;
@@ -692,15 +710,24 @@ function exportData() {
 
 app.addEventListener("click", event => {
   const button = event.target.closest("[data-action]");
+  const closedExercisePicker = exercisePickerOpen && !event.target.closest(".exercise-picker");
+  if (closedExercisePicker) exercisePickerOpen = false;
   if (!button) {
     if (event.target.classList.contains("modal-backdrop")) {
       modal = null;
       render();
-    }
+    } else if (closedExercisePicker && !event.target.closest("select, input, textarea")) render();
     return;
   }
   const action = button.dataset.action;
-  if (action === "navigate") {
+  if (action === "toggle-exercise-picker") {
+    exercisePickerOpen = !exercisePickerOpen;
+    render();
+  } else if (action === "select-chart-exercise") {
+    selectedExercise = button.dataset.id;
+    exercisePickerOpen = false;
+    render();
+  } else if (action === "navigate") {
     const target = button.dataset.page;
     if (editor && target !== "My Workouts" && editorHasChanges()) {
       modal = { type: "discard-editor", target };
@@ -844,12 +871,14 @@ app.addEventListener("change", event => {
   if (target.id === "category-filter" && editor) {
     editor.category = target.value;
     render();
-  } else if (target.id === "chart-exercise") {
-    selectedExercise = target.value; render();
   } else if (target.id === "chart-period") {
-    selectedPeriod = target.value; render();
+    selectedPeriod = target.value;
+    exercisePickerOpen = false;
+    render();
   } else if (target.id === "chart-metric") {
-    selectedMetric = target.value; render();
+    selectedMetric = target.value;
+    exercisePickerOpen = false;
+    render();
   } else if (target.id === "weight-unit") {
     persist({ ...data, profile: { ...data.profile, unit: target.value } }, `Weight unit changed to ${target.value}.`);
   } else if (target.id === "import-file" && target.files?.[0]) {
@@ -871,6 +900,14 @@ app.addEventListener("change", event => {
     });
   }
 });
+
+app.addEventListener("error", event => {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement) || !image.matches("[data-exercise-image]")) return;
+  image.hidden = true;
+  const fallback = image.nextElementSibling;
+  if (fallback) fallback.hidden = false;
+}, true);
 
 app.addEventListener("submit", event => {
   if (event.target.id === "onboarding-form") {

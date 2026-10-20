@@ -13,7 +13,7 @@ The development server uses Node's built-in HTTP modules and serves the project 
 
 Create a static production build with `npm run build`, then deploy the contents of `dist/`. The build copies the HTML, JavaScript, generated CSS, and `workout.json` without bundling or transforming the app. Preview that output with `npm run preview`.
 
-The exercise catalogue is loaded from the root-level `workout.json` using a URL relative to the page. Keep it alongside `index.html` in development and in the published site.
+The exercise catalogue and its ID-matched images are loaded from root-level `workout.json` and `workout-images/` using URLs relative to the page. Keep them alongside `index.html` in development; the static build copies both into `dist/`.
 
 ## Included
 

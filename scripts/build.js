@@ -11,4 +11,6 @@ for (const file of ["index.html", "app.js", "app.css", "workout.json"]) {
   await cp(resolve(root, file), resolve(output, file));
 }
 
+await cp(resolve(root, "workout-images"), resolve(output, "workout-images"), { recursive: true, force: true });
+
 console.log(`Static site created in ${output}`);
