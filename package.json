@@ -8,7 +8,8 @@
     "build": "npm run css && node scripts/build.js",
     "css": "tailwindcss -i ./src.css -o ./app.css --minify",
     "css:watch": "tailwindcss -i ./src.css -o ./app.css --watch=always",
-    "preview": "node scripts/server.js dist"
+    "preview": "node scripts/server.js dist",
+    "test": "node --test"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.0",

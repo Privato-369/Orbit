@@ -1,3 +1,5 @@
+import { validateExerciseSet } from "./exercise-validation.js";
+
 const STORAGE_KEY = "orbit.data.v1";
 const KG_TO_LB = 2.2046226218;
 const MAX_HISTORY = 30;
@@ -82,6 +84,19 @@ function fmtDate(value, options = { month: "short", day: "numeric", year: "numer
 
 function unit() {
   return data.profile?.unit || "kg";
+}
+
+function validationMessage(result) {
+  if (result.reason === "invalid-input") {
+    return "Enter a valid weight and a positive whole number of reps.";
+  }
+  if (result.reason === "weight-limit") {
+    return `This weight exceeds this exercise's limit of ${toDisplay(result.limitKg)} ${unit()}. Check your entry.`;
+  }
+  if (result.reason === "volume-limit") {
+    return `This set exceeds this exercise's per-set volume limit of ${result.limit} kg-reps. Check your weight and reps.`;
+  }
+  return "Unable to validate this exercise because its limits are unavailable. Please try again or contact support.";
 }
 
 function toDisplay(kg, digits = 1) {
@@ -538,14 +553,20 @@ function finishSession() {
     for (let index = 0; index < exercise.sets.length; index += 1) {
       const set = exercise.sets[index];
       if (!set.done) continue;
-      const weight = set.weight.trim();
-      const reps = set.reps.trim();
-      if (!weight || !reps || !Number.isFinite(Number(weight)) || Number(weight) < 0 ||
-        !/^\d+$/.test(reps) || Number(reps) < 1) {
-        notify("Complete checked sets need a valid weight and at least 1 repetition.");
+      const validation = validateExerciseSet({
+        exerciseId: exercise.exerciseId,
+        exerciseCatalog: catalogue,
+        weight: set.weight,
+        reps: set.reps,
+        inputUnit: unit(),
+      });
+      if (!validation.valid) {
+        set.done = false;
+        persist({ ...data, active: { ...active } });
+        notify(validationMessage(validation));
         return;
       }
-      sets.push({ weightKg: fromDisplay(weight), reps: Number(reps), setNumber: index + 1 });
+      sets.push({ weightKg: validation.weightKg, reps: validation.reps, setNumber: index + 1 });
     }
     if (sets.length) completedExercises.push({
       exerciseId: exercise.exerciseId, exerciseName: exercise.name, category: exercise.category,
@@ -562,6 +583,21 @@ function finishSession() {
 
 function saveCompletedSession(active, completedExercises) {
   if (data.sessions.some(s => s.id === active.id)) return;
+  for (const exercise of completedExercises) {
+    for (const set of exercise.sets) {
+      const validation = validateExerciseSet({
+        exerciseId: exercise.exerciseId,
+        exerciseCatalog: catalogue,
+        weight: set.weightKg,
+        reps: set.reps,
+        inputUnit: "kg",
+      });
+      if (!validation.valid) {
+        notify(validationMessage(validation));
+        return;
+      }
+    }
+  }
   const completedAt = new Date().toISOString();
   const session = {
     id: active.id, workoutId: active.workoutId, workoutName: active.workoutName,
@@ -789,6 +825,21 @@ app.addEventListener("click", event => {
   else if (action === "toggle-set") {
     const set = sessionSet(Number(button.dataset.exercise), Number(button.dataset.set));
     if (!set) return;
+    if (button.checked) {
+      const exercise = data.active.exercises[Number(button.dataset.exercise)];
+      const validation = validateExerciseSet({
+        exerciseId: exercise.exerciseId,
+        exerciseCatalog: catalogue,
+        weight: set.weight,
+        reps: set.reps,
+        inputUnit: unit(),
+      });
+      if (!validation.valid) {
+        button.checked = false;
+        notify(validationMessage(validation));
+        return;
+      }
+    }
     set.done = button.checked;
     persist({ ...data, active: { ...data.active } });
   } else if (action === "open-history") {
@@ -856,6 +907,24 @@ app.addEventListener("input", event => {
     const set = sessionSet(Number(target.dataset.exercise), Number(target.dataset.set));
     if (!set) return;
     set[target.dataset.sessionInput] = target.value;
+    if (set.done) {
+      const exercise = data.active.exercises[Number(target.dataset.exercise)];
+      const validation = validateExerciseSet({
+        exerciseId: exercise.exerciseId,
+        exerciseCatalog: catalogue,
+        weight: set.weight,
+        reps: set.reps,
+        inputUnit: unit(),
+      });
+      if (!validation.valid) {
+        set.done = false;
+        const row = target.closest(".set-row");
+        row?.classList.remove("done");
+        const checkbox = row?.querySelector(".done-control");
+        if (checkbox) checkbox.checked = false;
+        notify(validationMessage(validation));
+      }
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       errorMessage = "";
